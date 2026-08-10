@@ -2,6 +2,7 @@
 
 import com.android.build.gradle.tasks.PackageAndroidArtifact
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.GradleException
 import java.net.URI
 
 plugins {
@@ -20,10 +21,17 @@ val androidMinSdkVersion: Int by rootProject.extra
 val androidTargetSdkVersion: Int by rootProject.extra
 val androidSourceCompatibility: JavaVersion by rootProject.extra
 val androidTargetCompatibility: JavaVersion by rootProject.extra
+val managerVersionBrand: String by rootProject.extra
+val managerVersionBaseName: String by rootProject.extra
 val managerVersionCode: Int by rootProject.extra
 val managerVersionName: String by rootProject.extra
 val branchName: String by rootProject.extra
 val kernelPatchVersion: String by rootProject.extra
+val kernelPatchRepoOwner: String by rootProject.extra
+val kernelPatchRepoName: String by rootProject.extra
+
+val kernelPatchReleaseBaseUrl =
+    "https://github.com/$kernelPatchRepoOwner/$kernelPatchRepoName/releases/download/$kernelPatchVersion"
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -120,7 +128,7 @@ android {
             }
         }
         buildConfigField("String", "buildKPV", "\"$kernelPatchVersion\"")
-        base.archivesName = "APatch_${managerVersionCode}_${managerVersionName}_${branchName}"
+        base.archivesName = "APatch_${managerVersionBrand}_${managerVersionCode}_${managerVersionBaseName}_${branchName}"
     }
 
     compileOptions {
@@ -207,6 +215,7 @@ fun isFileUpdated(url: String, localFile: File): Boolean {
 }
 
 fun downloadFile(url: String, destFile: File) {
+    destFile.parentFile?.mkdirs()
     URI.create(url).toURL().openStream().use { input ->
         destFile.outputStream().use { output ->
             input.copyTo(output)
@@ -239,14 +248,14 @@ fun downloadFileRetry(url: String, destFile: File, maxRetries: Int = 5) {
 
 registerDownloadTask(
     taskName = "downloadKpimg",
-    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/$kernelPatchVersion/kpimg-android",
+    srcUrl = "$kernelPatchReleaseBaseUrl/kpimg-android",
     destPath = "${project.projectDir}/src/main/assets/kpimg",
     project = project
 )
 
 registerDownloadTask(
     taskName = "downloadKptools",
-    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/$kernelPatchVersion/kptools-android",
+    srcUrl = "$kernelPatchReleaseBaseUrl/kptools-android",
     destPath = "${project.projectDir}/libs/arm64-v8a/libkptools.so",
     project = project
 )

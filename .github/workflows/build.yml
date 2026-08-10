@@ -8,6 +8,7 @@ on:
       - '.github/workflows/build.yml'
       - 'app/**'
       - 'apd/**'
+      - 'kpm/**'
       - 'build.gradle.kts'
       - 'gradle/libs.versions.toml'
   pull_request:
@@ -16,6 +17,7 @@ on:
       - '.github/workflows/build.yml'
       - 'app/**'
       - 'apd/**'
+      - 'kpm/**'
       - 'build.gradle.kts'
       - 'gradle/libs.versions.toml'
   workflow_call:
@@ -56,9 +58,10 @@ jobs:
 
       - name: Install toolchain
         run: |
+          sudo apt-get update
           rustup default stable
           rustup update stable
-          cargo install cargo-ndk
+          cargo install cargo-ndk --locked
           rustup target install aarch64-linux-android
 
       - name: Cache Rust
