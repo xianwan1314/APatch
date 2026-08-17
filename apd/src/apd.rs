@@ -1,6 +1,6 @@
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
-use std::{env, ffi::CStr, path::PathBuf, process::Command};
+use std::{env, ffi::{CStr, CString}, path::PathBuf, process::Command};
 
 use anyhow::{Ok, Result};
 #[cfg(unix)]
@@ -25,17 +25,18 @@ fn parse_gid(g: &str) -> Result<u32, std::num::ParseIntError> {
     g.parse::<u32>()
 }
 
-fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
+fn set_identity(uid: u32, gid: u32, groups: &[u32]) -> rustix::io::Result<()> {
     #[cfg(any(target_os = "linux", target_os = "android"))]
     let gid = Gid::from_raw(gid);
     let uid = Uid::from_raw(uid);
     #[cfg(any(target_os = "linux", target_os = "android"))]
     {
         let groups: Vec<Gid> = groups.iter().map(|&g| Gid::from_raw(g)).collect();
-        let _ = set_thread_groups(&groups);
+        set_thread_groups(&groups)?;
     }
-    set_thread_res_gid(gid, gid, gid).ok();
-    set_thread_res_uid(uid, uid, uid).ok();
+    set_thread_res_gid(gid, gid, gid)?;
+    set_thread_res_uid(uid, uid, uid)?;
+    rustix::io::Result::Ok(())
 }
 
 #[cfg(not(unix))]
@@ -95,16 +96,20 @@ pub fn root_shell() -> Result<()> {
         "Specify a supplementary group. The first specified supplementary group is also used as a primary group if the option -g is not specified.",
         "GROUP",
     );
+    // Accepted for Magisk-compatible invocations (su -cn/-z/-Z <context>) from legacy
+    // root apps. Per-session SELinux context switching is not implemented, so the
+    // requested context is ignored with a warning below.
+    opts.optopt("Z", "context", "Specify SELinux context (ignored)", "CONTEXT");
     opts.optflag("", "no-pty", "Do not allocate a new pseudo terminal.");
 
-    // Replace -cn with -z, -mm with -M for supporting getopt_long
+    // Replace -cn and -z with -Z, -mm with -M for backwards compatibility (same as Magisk)
     let args = args
         .into_iter()
         .map(|e| {
             if e == "-mm" {
                 "-M".to_string()
-            } else if e == "-cn" {
-                "-z".to_string()
+            } else if e == "-cn" || e == "-z" {
+                "-Z".to_string()
             } else {
                 e
             }
@@ -140,6 +145,10 @@ pub fn root_shell() -> Result<()> {
     let preserve_env = matches.opt_present("p");
     let mount_master = matches.opt_present("M");
 
+    if let Some(context) = matches.opt_str("Z") {
+        log::warn!("su: SELinux context {context} requested but per-session context switching is not supported, ignoring");
+    }
+
     // -g overrides the primary group, -G appends supplementary groups
     let groups = matches
         .opt_strs("G")
@@ -170,18 +179,26 @@ pub fn root_shell() -> Result<()> {
     let mut gid = unsafe { libc::getgid() };
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
+        // getpwnam needs a NUL-terminated C string; String::as_ptr() is not
+        // guaranteed to be one, which is UB and made every lookup fail.
+        let c_name = CString::new(name.as_str())?;
         (uid, gid) = unsafe {
             #[cfg(target_arch = "aarch64")]
-            let pw = libc::getpwnam(name.as_ptr()).as_ref();
+            let pw = libc::getpwnam(c_name.as_ptr()).as_ref();
             #[cfg(target_arch = "x86_64")]
-            let pw = libc::getpwnam(name.as_ptr() as *const i8).as_ref();
+            let pw = libc::getpwnam(c_name.as_ptr() as *const i8).as_ref();
 
             match pw {
                 Some(pw) => (pw.pw_uid, pw.pw_gid),
-                None => {
-                    let uid = name.parse::<u32>().unwrap_or(0);
-                    (uid, uid)
-                }
+                None => match name.parse::<u32>() {
+                    Result::Ok(uid) => (uid, uid),
+                    // Refuse to start rather than silently handing out uid 0
+                    // for an unknown user (same behavior as Magisk).
+                    Err(_) => {
+                        eprintln!("su: unknown user: {name}");
+                        std::process::exit(1);
+                    }
+                },
             }
         }
     }
@@ -254,7 +271,7 @@ pub fn root_shell() -> Result<()> {
                 let _ = utils::switch_mnt_ns(1);
             }
 
-            set_identity(uid, gid, &groups);
+            set_identity(uid, gid, &groups)?;
 
             Result::Ok(())
         })

@@ -3,14 +3,10 @@ package me.bmax.apatch.util
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.pm.Signature
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.provider.OpenableColumns
 import android.system.Os
-import android.util.Base64
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
@@ -23,11 +19,7 @@ import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.apApp
 import me.bmax.apatch.ui.screen.MODULE_TYPE
 import java.io.File
-import java.security.MessageDigest
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 import java.util.Properties
-import java.util.zip.ZipFile
 
 private const val TAG = "APatchCli"
 
@@ -107,8 +99,13 @@ private fun createMainRootShell() : Shell {
 }
 
 object APatchCli {
+    @Volatile
     var SHELL: Shell = createMainRootShell()
     val GLOBAL_MNT_SHELL: Shell = createRootShell(true)
+
+    // Serialized so a reader can never observe the half-reset MainShell (private
+    // fields cleared via reflection) between the reset and the SHELL swap.
+    @Synchronized
     fun refresh() {
         val tmp = SHELL
 
@@ -210,11 +207,19 @@ fun listModules(): String {
     val shell = getRootShell()
     val out =
         shell.newJob().add("${APApplication.APD_PATH} module list").to(ArrayList(), null).exec().out
-    withNewRootShell{
-       newJob().add("cp /data/user/*/me.bmax.apatch/patch/ori.img /data/adb/ap/ && rm /data/user/*/me.bmax.apatch/patch/ori.img")
-       .to(ArrayList(),null).exec()
-   }
     return out.joinToString("\n").ifBlank { "[]" }
+}
+
+// Devices patched via PATCH_ONLY and flashed manually (e.g. fastboot) never go
+// through the patch-completion handoff, so their stock boot backup is still in
+// the app-private patch dir. Move it next to apd once root is available;
+// idempotent and a no-op when nothing is pending.
+fun migrateStockBootBackup() {
+    withNewRootShell {
+        newJob().add(
+            "mkdir -p /data/adb/ap && cp /data/user/*/me.bmax.apatch/patch/ori.img /data/adb/ap/ 2>/dev/null && rm -f /data/user/*/me.bmax.apatch/patch/ori.img; true"
+        ).exec()
+    }
 }
 
 fun hasMetaModule(): Boolean {
@@ -230,7 +235,7 @@ fun getMetaModuleImplement(): String {
         }
 
         val prop = Properties()
-        prop.load(metaModuleProp.newInputStream())
+        metaModuleProp.newInputStream().use { prop.load(it) }
 
         val name = prop.getProperty("name")
         Log.i(TAG, "Meta module implement: $name")
@@ -270,42 +275,45 @@ fun installModule(
     uri: Uri, type: MODULE_TYPE, onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
     val resolver = apApp.contentResolver
-    with(resolver.openInputStream(uri)) {
-        val file = File(apApp.cacheDir, "module_$type.zip")
+    val file = File(apApp.cacheDir, "module_$type.zip")
+    resolver.openInputStream(uri)?.use { input ->
         file.outputStream().use { output ->
-            this?.copyTo(output)
+            input.copyTo(output)
         }
-
-        val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-            override fun onAddElement(s: String?) {
-                onStdout(s ?: "")
-            }
-        }
-
-        val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-            override fun onAddElement(s: String?) {
-                onStderr(s ?: "")
-            }
-        }
-
-        val shell = getRootShell()
-
-        var result = false
-        if(type == MODULE_TYPE.APM) {
-            val cmd = "${APApplication.APD_PATH} module install ${file.absolutePath}"
-            result = shell.newJob().add(cmd).to(stdoutCallback, stderrCallback)
-                    .exec().isSuccess
-        } else {
-//            ZipUtils.
-        }
-
-        Log.i(TAG, "install $type module $uri result: $result")
-
-        file.delete()
-
-        onFinish(result)
-        return result
+    } ?: run {
+        onFinish(false)
+        return false
     }
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val shell = getRootShell()
+
+    var result = false
+    if(type == MODULE_TYPE.APM) {
+        val cmd = "${APApplication.APD_PATH} module install ${file.absolutePath}"
+        result = shell.newJob().add(cmd).to(stdoutCallback, stderrCallback)
+                .exec().isSuccess
+    } else {
+//            ZipUtils.
+    }
+
+    Log.i(TAG, "install $type module $uri result: $result")
+
+    file.delete()
+
+    onFinish(result)
+    return result
 }
 
 fun runAPModuleAction(
@@ -403,11 +411,12 @@ fun installJailbreak(): Boolean {
 
 /** Whether the SELinux mode is permissive (getenforce), the prerequisite for jailbreak. */
 fun isSELinuxPermissive(): Boolean {
-    val shell = Shell.Builder.create().build("sh")
-    val out = ArrayList<String>()
-    val result = shell.newJob().add("getenforce").to(out, ArrayList()).exec()
-    return result.isSuccess &&
-        out.firstOrNull()?.trim()?.equals("Permissive", ignoreCase = true) == true
+    Shell.Builder.create().build("sh").use { shell ->
+        val out = ArrayList<String>()
+        val result = shell.newJob().add("getenforce").to(out, ArrayList()).exec()
+        return result.isSuccess &&
+            out.firstOrNull()?.trim()?.equals("Permissive", ignoreCase = true) == true
+    }
 }
 
 /** Whether jailbreak mode is active (the ko has been loaded and a marker written). */
@@ -448,71 +457,3 @@ fun getFileNameFromUri(context: Context, uri: Uri): String? {
     return fileName
 }
 
-@Suppress("DEPRECATION")
-private fun signatureFromAPI(context: Context): ByteArray? {
-    return try {
-        val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            context.packageManager.getPackageInfo(
-                context.packageName, PackageManager.GET_SIGNING_CERTIFICATES
-            )
-        } else {
-            context.packageManager.getPackageInfo(
-                context.packageName,
-                PackageManager.GET_SIGNATURES
-            )
-        }
-
-        val signatures: Array<out Signature>? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                packageInfo.signingInfo?.apkContentsSigners
-            } else {
-                packageInfo.signatures
-            }
-
-        signatures?.firstOrNull()?.toByteArray()
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
-
-private fun signatureFromAPK(context: Context): ByteArray? {
-    var signatureBytes: ByteArray? = null
-    try {
-        ZipFile(context.packageResourcePath).use { zipFile ->
-            val entries = zipFile.entries()
-            while (entries.hasMoreElements() && signatureBytes == null) {
-                val entry = entries.nextElement()
-                if (entry.name.matches("(META-INF/.*)\\.(RSA|DSA|EC)".toRegex())) {
-                    zipFile.getInputStream(entry).use { inputStream ->
-                        val certFactory = CertificateFactory.getInstance("X509")
-                        val x509Cert =
-                            certFactory.generateCertificate(inputStream) as X509Certificate
-                        signatureBytes = x509Cert.encoded
-                    }
-                }
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return signatureBytes
-}
-
-private fun validateSignature(signatureBytes: ByteArray?, validSignature: String): Boolean {
-    signatureBytes ?: return false
-    val digest = MessageDigest.getInstance("SHA-256")
-    val signatureHash = Base64.encodeToString(digest.digest(signatureBytes), Base64.NO_WRAP)
-    return signatureHash == validSignature
-}
-
-fun verifyAppSignature(validSignature: String): Boolean {
-    val context = apApp.applicationContext
-    val apkSignature = signatureFromAPK(context)
-    val apiSignature = signatureFromAPI(context)
-
-    return validateSignature(apiSignature, validSignature) && validateSignature(
-        apkSignature,
-        validSignature
-    )
-}

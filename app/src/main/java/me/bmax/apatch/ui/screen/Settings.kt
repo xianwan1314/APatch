@@ -33,7 +33,7 @@ import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Engineering
-import androidx.compose.material.icons.filled.FeaturedPlayList
+import androidx.compose.material.icons.automirrored.filled.FeaturedPlayList
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.InvertColors
 import androidx.compose.material.icons.filled.Save
@@ -56,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -71,7 +72,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -114,8 +114,16 @@ fun SettingScreen() {
     var isGlobalNamespaceEnabled by rememberSaveable {
         mutableStateOf(false)
     }
-    if (kPatchReady && aPatchReady) {
-        isGlobalNamespaceEnabled = isGlobalNamespaceEnabled()
+    var namespaceLoaded by remember { mutableStateOf(false) }
+    // The check shells out as root; run it once off the main thread instead of
+    // synchronously in composition on every recomposition. The switch stays
+    // disabled until the real value lands so a fast tap can't act on the
+    // placeholder and get overwritten by the late result.
+    LaunchedEffect(kPatchReady && aPatchReady) {
+        if (kPatchReady && aPatchReady) {
+            isGlobalNamespaceEnabled = withContext(Dispatchers.IO) { isGlobalNamespaceEnabled() }
+            namespaceLoaded = true
+        }
     }
 
     val snackBarHost = LocalSnackbarHost.current
@@ -185,6 +193,7 @@ fun SettingScreen() {
                     title = stringResource(id = R.string.settings_global_namespace_mode),
                     summary = stringResource(id = R.string.settings_global_namespace_mode_summary),
                     checked = isGlobalNamespaceEnabled,
+                    enabled = namespaceLoaded,
                     onCheckedChange = {
                         setGlobalNamespaceEnabled(
                             if (isGlobalNamespaceEnabled) {
@@ -205,7 +214,7 @@ fun SettingScreen() {
                     )
                 }
                 SwitchItem(
-                    icon = Icons.Filled.FeaturedPlayList,
+                    icon = Icons.AutoMirrored.Filled.FeaturedPlayList,
                     title = stringResource(id = R.string.settings_sucompat),
                     summary = stringResource(id = R.string.settings_sucompat_summary),
                     checked = sucompatEnabled,
@@ -424,12 +433,7 @@ fun SettingScreen() {
                                     Text(
                                         text = stringResource(id = R.string.save_log),
                                         modifier = Modifier.padding(top = 16.dp),
-                                        textAlign = TextAlign.Center.also {
-                                            LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
-                                            )
-                                        }
+                                        textAlign = TextAlign.Center
 
                                     )
                                 }
@@ -476,12 +480,7 @@ fun SettingScreen() {
                                     Text(
                                         text = stringResource(id = R.string.send_log),
                                         modifier = Modifier.padding(top = 16.dp),
-                                        textAlign = TextAlign.Center.also {
-                                            LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
-                                            )
-                                        }
+                                        textAlign = TextAlign.Center
 
                                     )
                                 }

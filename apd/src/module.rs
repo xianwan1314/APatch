@@ -349,13 +349,12 @@ pub fn prune_modules() -> Result<()> {
         Ok(())
     })?;
 
-    // collect remaining modules, if none, clean up metamodule record
-    let remaining_modules: Vec<_> = std::fs::read_dir(defs::MODULE_DIR)?
+    // clean up metamodule record if none remain
+    let has_remaining = std::fs::read_dir(defs::MODULE_DIR)?
         .filter_map(std::result::Result::ok)
-        .filter(|entry| entry.path().join("module.prop").exists())
-        .collect();
+        .any(|entry| entry.path().join("module.prop").exists());
 
-    if remaining_modules.is_empty() {
+    if !has_remaining {
         info!("no remaining modules.");
     }
 
@@ -392,6 +391,14 @@ fn _install_module(zip: &str) -> Result<()> {
         bail!("module id not found in module.prop!");
     };
     let module_id = module_id.trim();
+
+    // The id becomes a directory name under MODULE_DIR and is interpolated into
+    // shell commands by the manager; reject path traversal at this trust boundary
+    // (same rule as KernelSU and module_config.rs).
+    let id_re = regex_lite::Regex::new(r"^[a-zA-Z][a-zA-Z0-9._-]+$")?;
+    if !id_re.is_match(module_id) {
+        bail!("invalid module id: {module_id}");
+    }
 
     // Check if this module is a metamodule
     let is_metamodule = metamodule::is_metamodule(&module_prop);

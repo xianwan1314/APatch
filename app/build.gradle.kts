@@ -2,7 +2,6 @@
 
 import com.android.build.gradle.tasks.PackageAndroidArtifact
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.gradle.api.GradleException
 import java.net.URI
 
 plugins {
@@ -14,21 +13,19 @@ plugins {
     id("kotlin-parcelize")
 }
 
-val androidCompileSdkVersion: Int by rootProject.extra
-val androidCompileNdkVersion: String by rootProject.extra
-val androidBuildToolsVersion: String by rootProject.extra
-val androidMinSdkVersion: Int by rootProject.extra
-val androidTargetSdkVersion: Int by rootProject.extra
-val androidSourceCompatibility: JavaVersion by rootProject.extra
-val androidTargetCompatibility: JavaVersion by rootProject.extra
-val managerVersionBrand: String by rootProject.extra
-val managerVersionBaseName: String by rootProject.extra
-val managerVersionCode: Int by rootProject.extra
-val managerVersionName: String by rootProject.extra
-val branchName: String by rootProject.extra
-val kernelPatchVersion: String by rootProject.extra
-val kernelPatchRepoOwner: String by rootProject.extra
-val kernelPatchRepoName: String by rootProject.extra
+val androidCompileSdkVersion: Int = rootProject.extra["androidCompileSdkVersion"] as Int
+val androidCompileNdkVersion: String = rootProject.extra["androidCompileNdkVersion"] as String
+val androidBuildToolsVersion: String = rootProject.extra["androidBuildToolsVersion"] as String
+val androidMinSdkVersion: Int = rootProject.extra["androidMinSdkVersion"] as Int
+val androidTargetSdkVersion: Int = rootProject.extra["androidTargetSdkVersion"] as Int
+val managerVersionBrand: String = rootProject.extra["managerVersionBrand"] as String
+val managerVersionBaseName: String = rootProject.extra["managerVersionBaseName"] as String
+val managerVersionCode: Int = rootProject.extra["managerVersionCode"] as Int
+val managerVersionName: String = rootProject.extra["managerVersionName"] as String
+val branchName: String = rootProject.extra["branchName"] as String
+val kernelPatchVersion: String = rootProject.extra["kernelPatchVersion"] as String
+val kernelPatchRepoOwner: String = rootProject.extra["kernelPatchRepoOwner"] as String
+val kernelPatchRepoName: String = rootProject.extra["kernelPatchRepoName"] as String
 
 val kernelPatchReleaseBaseUrl =
     "https://github.com/$kernelPatchRepoOwner/$kernelPatchRepoName/releases/download/$kernelPatchVersion"
@@ -382,15 +379,11 @@ dependencies {
 
     implementation(libs.dev.rikka.rikkax.parcelablelist)
 
-    implementation(libs.io.coil.kt.coil.compose)
+    implementation(libs.io.coil.kt.coil3.coil.compose)
 
     implementation(libs.kotlinx.coroutines.core)
 
-    implementation(libs.me.zhanghai.android.appiconloader.coil)
-
-    implementation(libs.sheet.compose.dialogs.core)
-    implementation(libs.sheet.compose.dialogs.list)
-    implementation(libs.sheet.compose.dialogs.input)
+    implementation(libs.okhttp)
 
     implementation(libs.markdown)
 
