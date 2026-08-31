@@ -212,6 +212,11 @@
     <string name="settings_night_theme_enabled">Activa el tema fosc</string>
     <string name="settings_sucompat">Compatibilitat su heretada</string>
     <string name="settings_sucompat_summary">Activa la compatibilitat su llegada (per quan su no funciona)</string>
+    <string name="settings_selinux_hide">Amaga la modificació de SELinux (Prova)</string>
+    <string name="settings_selinux_hide_summary">"Amaga els canvis de SELinux perquè no els detectin els processos d'usuari (aquesta funció pot ser inestable). El mode segur pot desactivar aquesta funció."</string>
+    <string name="settings_selinux_hide_warning_title">Avís</string>
+    <string name="settings_selinux_hide_warning_below_5_10">"Aquesta funció només s'ha provat amb el nucli 5.10 o superior i pot ser inestable en versions de nucli inferiors."</string>
+    <string name="settings_selinux_hide_warning_non_gki">"Els nuclis no-GKI comporten un risc més gran i poden provocar un error d'inici. Assegureu-vos que heu fet una còpia de seguretat de les vostres dades."</string>
     <string name="settings_use_system_color_theme">Tema de color del sistema</string>
     <string name="settings_use_system_color_theme_summary">Utilitza un tema de color generat pel sistema a partir del fons de pantalla actual</string>
     <string name="su_pkg_excluded_setting_summary">"Activar aquesta opció permetrà a APatch restaurar qualsevol fitxer modificat pels mòduls d\'aquesta aplicació."</string>
@@ -230,4 +235,9 @@
     <string name="jailbreak">Jailbreak</string>
     <string name="jailbreak_triggered">"S'ha activat el jailbreak. Espereu a obtenir root i, després, reinicieu en mode suau."</string>
     <string name="reboot_soft">Reinici suau</string>
+    <string name="kpm_installed">Instal·lat</string>
+    <string name="kpm_disabled">Desactivat (s’aplicarà després de reiniciar)</string>
+    <string name="kpm_embedded">Incrustat</string>
+    <string name="kpm_embedded_unload_invalid">Els KPM incrustats no es poden descarregar; continuaran actius després de reiniciar.</string>
+    <string name="kpm_install_toast_succ">Instal·lat correctament; s’aplicarà després de reiniciar</string>
 </resources>

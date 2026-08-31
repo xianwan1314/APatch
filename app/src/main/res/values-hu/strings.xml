@@ -214,6 +214,11 @@
     <string name="settings_night_theme_enabled">Sötét téma engedélyezése</string>
     <string name="settings_sucompat">Örökölt su-kompatibilitás</string>
     <string name="settings_sucompat_summary">Régi su-kompatibilitás engedélyezése (ha a su nem működik)</string>
+    <string name="settings_selinux_hide">SELinux-módosítás elrejtése (Teszt)</string>
+    <string name="settings_selinux_hide_summary">Elrejti a SELinux-módosításokat a felhasználói folyamatok észlelése elől (ez a funkció instabil lehet). A biztonságos mód letilthatja ezt a funkciót.</string>
+    <string name="settings_selinux_hide_warning_title">Figyelmeztetés</string>
+    <string name="settings_selinux_hide_warning_below_5_10">Ez a funkció csak 5.10-es vagy újabb kernelen lett tesztelve, és alacsonyabb kernelverziókon instabil lehet.</string>
+    <string name="settings_selinux_hide_warning_non_gki">A nem GKI kernelek nagyobb kockázatot hordoznak, és rendszerindítási hibát okozhatnak. Győződjön meg róla, hogy az adatai biztonsági mentése megtörtént.</string>
     <string name="settings_use_system_color_theme">Rendszer színtéma</string>
     <string name="settings_use_system_color_theme_summary">A rendszer által az aktuális háttérkép alapján generált színtéma használata</string>
     <string name="teal_theme">Kékeszöld</string>
@@ -230,4 +235,9 @@
     <string name="jailbreak">Jailbreak</string>
     <string name="jailbreak_triggered">A jailbreak elindult. Várja meg a root-ot, majd hajtson végre lágy újraindítást.</string>
     <string name="reboot_soft">Lágy újraindítás</string>
+    <string name="kpm_installed">Telepítve</string>
+    <string name="kpm_disabled">Letiltva (újraindítás után lép életbe)</string>
+    <string name="kpm_embedded">Beágyazva</string>
+    <string name="kpm_embedded_unload_invalid">A beágyazott KPM-ek nem tölthetők le; újraindítás után is aktívak maradnak.</string>
+    <string name="kpm_install_toast_succ">Sikeresen telepítve; újraindítás után lép életbe</string>
 </resources>

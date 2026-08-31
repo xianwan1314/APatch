@@ -218,6 +218,11 @@
     <string name="settings_night_mode_follow_sys_summary">Byt automatiskt till mörkt tema baserat på systeminställningarna</string>
     <string name="settings_sucompat">Äldre su-kompatibilitet</string>
     <string name="settings_sucompat_summary">Aktivera äldre su-kompatibilitet (när su inte fungerar)</string>
+    <string name="settings_selinux_hide">Dölj SELinux-ändring (Test)</string>
+    <string name="settings_selinux_hide_summary">Döljer SELinux-ändringar från att upptäckas av användarprocesser (den här funktionen kan vara instabil). Säkerhetsläget kan inaktivera den här funktionen.</string>
+    <string name="settings_selinux_hide_warning_title">Varning</string>
+    <string name="settings_selinux_hide_warning_below_5_10">Den här funktionen är endast testad på kärnan 5.10 och nyare och kan vara instabil på lägre kärnversioner.</string>
+    <string name="settings_selinux_hide_warning_non_gki">Icke-GKI-kärnor medför en högre risk och kan orsaka startfel. Se till att dina data är säkerhetskopierade.</string>
     <string name="warning_of_meta_module_summary">Den här modulen vill montera /system; metamodulen kommer att hantera det. Annars kanske den inte fungerar.</string>
     <string name="warning_of_meta_module_title">Kräver metamodul</string>
     <string name="settings_jailbreak_mode">Jailbreak-läge</string>
@@ -230,4 +235,9 @@
     <string name="jailbreak">Jailbreak</string>
     <string name="jailbreak_triggered">Jailbreak utlöst. Vänta på root och utför sedan en mjuk omstart.</string>
     <string name="reboot_soft">Mjuk omstart</string>
+    <string name="kpm_installed">Installerad</string>
+    <string name="kpm_disabled">Inaktiverad (börjar gälla efter omstart)</string>
+    <string name="kpm_embedded">Inbäddad</string>
+    <string name="kpm_embedded_unload_invalid">Inbäddade KPM kan inte laddas ur; de förblir aktiva efter omstart.</string>
+    <string name="kpm_install_toast_succ">Installerad; börjar gälla efter omstart</string>
 </resources>

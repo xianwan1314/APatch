@@ -222,6 +222,11 @@
     <string name="search_modules">Modulları axtar</string>
     <string name="settings_sucompat">Köhnə su uyğunluğu</string>
     <string name="settings_sucompat_summary">Köhnə su uyğunluğunu aktivləşdirin (su işləmədikdə)</string>
+    <string name="settings_selinux_hide">SELinux dəyişikliyini gizlət (Test)</string>
+    <string name="settings_selinux_hide_summary">SELinux dəyişikliklərini istifadəçi proseslərinin aşkarlamasından gizlədir (bu xüsusiyyət qeyri-sabit ola bilər). Təhlükəsiz rejim bu xüsusiyyəti söndürə bilər.</string>
+    <string name="settings_selinux_hide_warning_title">Xəbərdarlıq</string>
+    <string name="settings_selinux_hide_warning_below_5_10">Bu xüsusiyyət yalnız 5.10 və yuxarı nüvədə sınaqdan keçirilib və daha aşağı nüvə versiyalarında qeyri-sabit ola bilər.</string>
+    <string name="settings_selinux_hide_warning_non_gki">GKI olmayan nüvələr daha böyük risk daşıyır və açılışın uğursuz olmasına səbəb ola bilər. Məlumatlarınızın ehtiyat nüsxəsini yaratdığınızdan əmin olun.</string>
     <string name="warning_of_meta_module_summary">Bu modul /system-i mount etmək istəyir, meta modul bununla məşğul olacaq. Əks halda, işləməyə bilər.</string>
     <string name="warning_of_meta_module_title">Meta modul tələb olunur</string>
     <string name="settings_jailbreak_mode">Cilbrik rejimi</string>
@@ -234,4 +239,9 @@
     <string name="jailbreak">Cilbrik</string>
     <string name="jailbreak_triggered">Jailbreak aktivləşdirildi. Kök icazəsini gözləyin, sonra yumşaq yenidən başladın.</string>
     <string name="reboot_soft">Yumşaq yenidən başlatma</string>
+    <string name="kpm_installed">Quraşdırılıb</string>
+    <string name="kpm_disabled">Deaktivdir (yenidən başladıldıqdan sonra qüvvəyə minir)</string>
+    <string name="kpm_embedded">Daxil edilib</string>
+    <string name="kpm_embedded_unload_invalid">Daxil edilmiş KPM-lər yüklənə bilməz; yenidən başladıldıqdan sonra da aktiv qalacaq.</string>
+    <string name="kpm_install_toast_succ">Uğurla quraşdırıldı; yenidən başladıldıqdan sonra qüvvəyə minir</string>
 </resources>

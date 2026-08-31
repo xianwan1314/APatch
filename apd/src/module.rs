@@ -11,12 +11,11 @@ use std::{
     collections::HashMap,
     env::var as env_var,
     fs::{self, remove_dir_all},
-    io::Cursor,
+    io::{Cursor, Read},
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
 };
-use zip_extensions::zip_extract_file_to_memory;
 
 #[allow(clippy::wildcard_imports)]
 use crate::utils::*;
@@ -189,7 +188,7 @@ pub fn load_sepolicy_rule() -> Result<()> {
             return Ok(());
         }
 
-        info!("load policy: {}", &rule_file.display());
+        info!("load policy: {}", rule_file.display());
         let mut _sepol = get_policy_main(&[
             "magiskpolicy".to_string(),
             "--live".to_string(),
@@ -375,10 +374,12 @@ fn _install_module(zip: &str) -> Result<()> {
 
     // read the module_id from zip
     let mut buffer: Vec<u8> = Vec::new();
-    let entry_path = PathBuf::from_str("module.prop")?;
     let zip_path = PathBuf::from_str(zip)?;
     let zip_path = zip_path.canonicalize()?;
-    zip_extract_file_to_memory(&zip_path, &entry_path, &mut buffer)?;
+    {
+        let mut archive = zip::ZipArchive::new(fs::File::open(&zip_path)?)?;
+        archive.by_name("module.prop")?.read_to_end(&mut buffer)?;
+    }
     let mut module_prop = HashMap::new();
     PropertiesIter::new_with_encoding(Cursor::new(buffer), encoding_rs::UTF_8).read_into(
         |k, v| {
@@ -474,7 +475,7 @@ fn _install_module(zip: &str) -> Result<()> {
     let _module_update_dir = format!("{}{}", modules_update_dir.display(), module_id);
     info!("module dir: {}", module_dir);
     if !Path::new(&module_dir.clone()).exists() {
-        fs::create_dir(&module_dir.clone()).expect("Failed to create module folder");
+        fs::create_dir(module_dir.clone()).expect("Failed to create module folder");
         let permissions = fs::Permissions::from_mode(0o700);
         fs::set_permissions(module_dir.clone(), permissions).expect("Failed to set permissions");
     }
@@ -505,8 +506,7 @@ fn _install_module(zip: &str) -> Result<()> {
 }
 
 pub fn install_module(zip: &str) -> Result<()> {
-    let result = _install_module(zip);
-    result
+    _install_module(zip)
 }
 
 pub fn _uninstall_module(id: &str, update_dir: &str) -> Result<()> {
@@ -625,7 +625,7 @@ pub fn run_action(id: &str) -> Result<()> {
         let _ = exec_script(&action_script_path, true);
     } else {
         //if no action.sh, try to run lua action
-        lua::run_lua(&id, "action", false, true).map_err(|e| anyhow::anyhow!("{}", e))?;
+        lua::run_lua(id, "action", false, true).map_err(|e| anyhow::anyhow!("{}", e))?;
     }
     Ok(())
 }
@@ -639,7 +639,7 @@ fn _change_module_state(module_dir: &str, mid: &str, enable: bool) -> Result<()>
     if enable {
         if disable_path.exists() {
             fs::remove_file(&disable_path).with_context(|| {
-                format!("Failed to remove disable file: {}", &disable_path.display())
+                format!("Failed to remove disable file: {}", disable_path.display())
             })?;
         }
     } else {

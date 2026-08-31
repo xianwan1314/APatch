@@ -220,6 +220,11 @@
     <string name="search_modules">Пошук модулів</string>
     <string name="settings_sucompat">Сумісність зі старим su</string>
     <string name="settings_sucompat_summary">Увімкнути сумісність зі старим su (якщо su не працює)</string>
+    <string name="settings_selinux_hide">Приховати зміну SELinux (Тест)</string>
+    <string name="settings_selinux_hide_summary">Приховує зміни SELinux від виявлення процесами користувача (ця функція може бути нестабільною). Безпечний режим може вимкнути цю функцію.</string>
+    <string name="settings_selinux_hide_warning_title">Попередження</string>
+    <string name="settings_selinux_hide_warning_below_5_10">Ця функція протестована лише на ядрі 5.10 і вище та може бути нестабільною на старіших версіях ядра.</string>
+    <string name="settings_selinux_hide_warning_non_gki">Ядра не-GKI несуть більший ризик і можуть спричинити збій завантаження. Переконайтеся, що ваші дані збережено у резервній копії.</string>
     <string name="warning_of_meta_module_summary">Цей модуль хоче змонтувати /system, метамодуль це зробить. Інакше він може не працювати.</string>
     <string name="warning_of_meta_module_title">Потрібен метамодуль</string>
     <string name="settings_jailbreak_mode">Режим джейлбрейка</string>
@@ -232,4 +237,9 @@
     <string name="jailbreak">Джейлбрейк</string>
     <string name="jailbreak_triggered">"Jailbreak активовано. Дочекайтеся отримання root, а потім виконайте м'яке перезавантаження."</string>
     <string name="reboot_soft">"М'яке перезавантаження"</string>
+    <string name="kpm_installed">Встановлено</string>
+    <string name="kpm_disabled">Вимкнено (набере чинності після перезавантаження)</string>
+    <string name="kpm_embedded">Вбудовано</string>
+    <string name="kpm_embedded_unload_invalid">Вбудовані KPM не можна вивантажити; після перезавантаження вони залишаться активними.</string>
+    <string name="kpm_install_toast_succ">Успішно встановлено; набере чинності після перезавантаження</string>
 </resources>

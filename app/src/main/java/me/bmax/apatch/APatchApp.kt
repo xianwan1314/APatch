@@ -62,9 +62,11 @@ class APApplication : Application(), Thread.UncaughtExceptionHandler {
         private const val NEED_REBOOT_FILE = "/dev/.need_reboot"
         const val GLOBAL_NAMESPACE_FILE = "/data/adb/.global_namespace_enable"
         const val SUCOMPAT_FILE = "/data/adb/ap/sucompat"
+        const val SELINUX_HIDE_FILE = APATCH_FOLDER + "selinux_hide"
         const val JAILBREAK_FILE = APATCH_FOLDER + "jailbreak"
         const val JAILBREAK_KO_PATH = APATCH_FOLDER + "kernelpatch.ko"
-        const val KPMS_DIR = APATCH_FOLDER + "kpms/"
+        /** Persisted, file-backed KPMs. Each module lives in <id>/<id>.kpm. */
+        const val KPMS_DIR = APATCH_FOLDER + "kpm/"
 
         @Deprecated("Use 'apd -V'")
         const val APATCH_VERSION_PATH = APATCH_FOLDER + "version"

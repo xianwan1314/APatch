@@ -218,6 +218,11 @@
     <string name="search_modules">ค้นหาโมดูล</string>
     <string name="settings_sucompat">ความเข้ากันได้กับ su รุ่นเก่า</string>
     <string name="settings_sucompat_summary">เปิดใช้งานความเข้ากันได้กับ su เวอร์ชันเก่า (สำหรับเมื่อ su ไม่ทำงาน)</string>
+    <string name="settings_selinux_hide">ซ่อนการแก้ไข SELinux (ทดสอบ)</string>
+    <string name="settings_selinux_hide_summary">ซ่อนการเปลี่ยนแปลง SELinux ไม่ให้ถูกตรวจพบโดยกระบวนการของผู้ใช้ (ฟีเจอร์นี้อาจไม่เสถียร) โหมดปลอดภัยสามารถปิดการใช้งานฟีเจอร์นี้ได้</string>
+    <string name="settings_selinux_hide_warning_title">คำเตือน</string>
+    <string name="settings_selinux_hide_warning_below_5_10">ฟีเจอร์นี้ทดสอบเฉพาะบนเคอร์เนล 5.10 ขึ้นไปและอาจไม่เสถียรบนเวอร์ชันเคอร์เนลที่ต่ำกว่า</string>
+    <string name="settings_selinux_hide_warning_non_gki">เคอร์เนลที่ไม่ใช่ GKI มีความเสี่ยงสูงกว่าและอาจทำให้บูตไม่สำเร็จ ตรวจสอบให้แน่ใจว่าข้อมูลของคุณถูกสำรองไว้</string>
     <string name="warning_of_meta_module_summary">โมดูลนี้ต้องการ mount /system เมตาโมดูลจะจัดการเรื่องนั้น มิฉะนั้นอาจไม่ทำงาน</string>
     <string name="warning_of_meta_module_title">ต้องใช้เมตาโมดูล</string>
     <string name="settings_jailbreak_mode">โหมดเจลเบรก</string>
@@ -230,4 +235,9 @@
     <string name="jailbreak">เจลเบรก</string>
     <string name="jailbreak_triggered">ทำการเจลเบรกแล้ว รอรับ root จากนั้นรีสตาร์ทแบบซอฟต์</string>
     <string name="reboot_soft">รีสตาร์ทแบบซอฟต์</string>
+    <string name="kpm_installed">ติดตั้งแล้ว</string>
+    <string name="kpm_disabled">ปิดใช้งาน (มีผลหลังรีบูต)</string>
+    <string name="kpm_embedded">ฝังอยู่</string>
+    <string name="kpm_embedded_unload_invalid">ไม่สามารถยกเลิกการโหลด KPM ที่ฝังอยู่ได้ และจะยังคงทำงานหลังรีบูต</string>
+    <string name="kpm_install_toast_succ">ติดตั้งสำเร็จ มีผลหลังรีบูต</string>
 </resources>
